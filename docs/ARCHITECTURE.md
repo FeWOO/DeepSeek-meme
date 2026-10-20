@@ -114,7 +114,8 @@
 
 1. Client `POST /api/memes/send`，body `{ sessionId, stickerId, mode? }`。
 2. Host 校验 session 存在于 `ctx.sessions`（或可解析的 live agent），并读取贴纸。
-3. Host 把图片读成字节，构造一条只含图片的用户消息内容：
+3. Host 读取贴纸字节，保存为 durable attachment；再用 `attachments.readImageRequest` 生成配置尺寸（默认 **180px 长边**）的展示版本。普通图片消息不经过这条路径，仍按 DSH 原生 240px 单图上限显示。
+4. Host 构造一条只含图片的用户消息内容：
    - `{ type: 'image', mediaType, data: <canonical base64>, name: '<名称>.<ext>' }`
    - 图片的 `name` 只作为附件提示，不会渲染成聊天文字。
 4. Host 调用 `ctx.sessionController.prompt({ requestId, sessionId, mode, content, clientTimeZone }, signal)` 投递；prompt 的 admission 会把 base64 图片提升为 durable attachment。**第二个参数 `signal` 必传**（漏传会得到 `Cannot read properties of undefined (reading 'throwIfAborted')`）；实现里带 30s 超时。

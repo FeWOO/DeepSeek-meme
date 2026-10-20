@@ -23,6 +23,17 @@
 - 浏览器 console 是否出现 `slot entry crashed` 未直接观测；只能确认 Client 槽位注册处于 active。
 - Host 半是 Node 模块：**直接修改源码后不会热更新**，需要重启 DSH，或对插件行做一次 disable → enable（本次通过后者加载了修复）。
 
+## v0.3.1 表情消息小图（2026-10-20）
+
+| 项目 | 证据 |
+| --- | --- |
+| 缩小发送 | `POST /api/memes/send`（steer，早安~）→ `{ accepted: true, image: { width: 180, height: 180, bytes: 13232 } }`；下一条用户消息中的图片为 180×180 WebP |
+| 普通图片不受影响 | 贴纸缩放只发生在 `/api/memes/send`；普通附件仍走 DSH 原生消息图片（单张长边 240px） |
+| 模型端仍可见 | 模型在纯图片消息中能辨认缩小后的「早安~」表情，含义目录仍可用 |
+| 配置 | `messageStickerSize: 180`（96–240 范围），写在 `cordis.patch.yml` |
+
+> 视觉验收：页面中贴纸气泡应明显小于普通 240px 图片；需刷新后由用户确认。
+
 ## v0.3.0 双包与默认表情（2026-10-20）
 
 | 项目 | 证据 |

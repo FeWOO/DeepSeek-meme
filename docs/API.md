@@ -120,9 +120,10 @@
 ```
 
 - `mode` 可选：`queue`（默认）| `steer`；
-- Host 校验 session、读取贴纸、把图片（canonical base64）作为**纯图片用户消息**投递；不含任何含义文字；
-- 成功：`{ "accepted": true }`；
+- Host 校验 session、读取贴纸，先保存为 attachment，再用附件服务的 `readImageRequest` 缩到配置的 `messageStickerSize`（默认 180px 长边），作为**纯图片用户消息**投递；不含任何含义文字；
+- 成功：`{ "accepted": true, "image": { "width": 180, "height": 180, "bytes": 13232 } }`；
 - 失败：`404 STICKER_NOT_FOUND` / `400 SESSION_INVALID` / `409 SESSION_NOT_LIVE` / `500 SEND_FAILED`。
+- 普通图片消息不经过这条路由，仍使用 DSH 原生渲染（单张长边 240px）。
 
 > 模型侧发送不走这个接口，而是 `send_sticker` 工具，详见 [ARCHITECTURE.md](ARCHITECTURE.md#52-模型发表情)。表情含义保存在目录中，用户消息本身只带图片。
 

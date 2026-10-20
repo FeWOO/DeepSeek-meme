@@ -11,6 +11,14 @@
 - 设计文档：架构、HTTP API、开发与验证、路线图。
 - 默认表情包目录 `assets/default/`。
 
+## [0.3.1] - 2026-10-20
+
+### Changed
+
+- 通过表情包插件发送的贴纸现在会先缩到 **180px 长边**再进入会话，聊天里明显小于普通图片（DSH 原生单图上限 240px）；普通图片附件完全不受影响。
+- 缩放走附件服务的 `readImageRequest`，对默认包、社区包和用户自建贴纸一视同仁；可通过 `messageStickerSize`（96–240）调整。
+- `POST /api/memes/send` 的响应新增 `image.width/height/bytes`，方便冒烟验证。
+
 ## [0.3.0] - 2026-10-20
 
 ### Added
