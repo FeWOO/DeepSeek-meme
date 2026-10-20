@@ -14,6 +14,7 @@
 | 模型工具 | `send_sticker action=list` 返回完整目录；`action=send` 返回文字 + 图片 attachment（`开心.png`，sha256 校验通过） |
 | 用户一键发送 | `POST /api/memes/send`（本会话）→ `{ "accepted": true }`；用户消息将携带 `【表情包】加油：…` 与图片 |
 | Client 槽位 | `conversation.input.right` 出现 `deepseek-meme-button`（order 40）；`conversation.input.dock` 出现 `deepseek-meme-panel`；`tool.call.toolview` 出现 `send_sticker` |
+| 最终素材刷新 | 素材定稿后按 disable → 删除旧 `DSH_HOME/memes` → enable 重新播种；`happy.png` 服务端 `Content-Length=32898` 与仓库文件字节一致，12 个文件全部为定稿版本 |
 | Host 路由健壮性 | 缺 `packId`、超大小、未知贴纸等错误会返回 `{ error: { code, message } }` 结构；实测发送前会校验 live session |
 
 ## 未验证 / 限制 ⚠️
