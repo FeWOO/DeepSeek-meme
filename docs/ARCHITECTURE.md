@@ -44,6 +44,11 @@
 
 ## 3. 数据模型
 
+当前随包两个独立 pack，同一个 catalog 下并列保存：
+
+- `whale-gpt` /「默认表情」：10 张 GPT 绘制贴纸，`order: 0`，素材在 `assets/default/`；
+- `whale-community` /「鲸鱼娘二创梗图」：8 张社区二创梗图，`order: 1`，素材在 `assets/community/`。
+
 `DSH_HOME/memes/catalog.json`：
 
 ```jsonc
@@ -88,14 +93,16 @@
 ## 4. 存储与播种
 
 - 数据目录：配置 `dataDir`；为空时使用 `join(DSH_HOME, 'memes')`（`DSH_HOME` 缺省 `~/.dsh`）。
-- 目录不存在时创建；`catalog.json` 不存在时播种 `assets/default/`：
-  1. 读取随包 `manifest.json`；
-  2. 复制图片到 `memes/assets/`（可用 manifest 提供 `width/height`）；
+- 目录不存在时创建；`catalog.json` 不存在时播种所有随包目录：
+  1. 扫描 `assets/*/manifest.json`（`default` 优先，其余按目录名排序）；
+  2. 复制每个包的图片到 `memes/assets/`（可用 manifest 提供 `width/height`）；
   3. 生成稳定 id 与 catalog。
-- **默认包迁移**：每次加载 catalog 时比较 `manifest.pack.id` 与现有 bundled 包：
-  - 相同 → 保留（用户改名、加图、改含义不会被覆盖）；
-  - 不同 → 移除旧 bundled 包及其素材文件，播种新默认包；用户自建包保留。
-  因此“换一套默认梗图”只需要替换 `assets/default/` 并给 `pack.id` 换一个新值。
+- **随包多包同步**：每次加载 catalog 时与 `assets/*/manifest.json` 对齐：
+  - 新目录 → 新增 bundled 包；
+  - 已消失的目录 → 移除对应 bundled 包及其素材文件；
+  - 同一 `pack.id` → 保留用户改名、加图、改含义等编辑，只刷新排序；
+  - 用户自建包永远保留。
+  `default` 目录的包排在最前（默认表情），`community` 紧随其后。
 - 写入策略：所有目录变更串行经过同一个 Promise 队列；先写 `catalog.json.tmp` 再 `rename` 覆盖，避免半写文件。
 - 素材文件写入：先确认大小与媒体类型，再写临时文件并 rename；删除贴纸时先改 catalog，再尽力删除文件。
 

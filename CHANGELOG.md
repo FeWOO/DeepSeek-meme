@@ -11,6 +11,20 @@
 - 设计文档：架构、HTTP API、开发与验证、路线图。
 - 默认表情包目录 `assets/default/`。
 
+## [0.3.0] - 2026-10-20
+
+### Added
+
+- 新默认包「默认表情」（`whale-gpt`）：10 张 GPT 绘制、由插件统一拆分/透明化/压缩的鲸鱼娘贴纸（收到、谢谢、我来啦、辛苦啦、晚安安、早安、喝奶茶、嗯…?、哼！、好困…）。
+- 支持随包分发多个表情包：宿主扫描 `assets/*/manifest.json`，新增/删除目录会增删对应 bundled 包；同 id 保留用户编辑。
+- `assets/gpt/` 保存两张 GPT 贴纸集的拆分源 PNG（不随 npm 包分发），`assets/_build/` 保存生成脚本（gitignore）。
+
+### Changed
+
+- 原「鲸鱼娘二创梗图」（8 张）移动到 `assets/community/`，作为第二个随包表情包保留，`order: 1`，内容与 id 均未改动。
+- 插件图标改用默认包的「早安~」头像。
+- `package.json` 只打包 `assets/default/` 与 `assets/community/`，不含原始拆分源。
+
 ## [0.2.1] - 2026-10-20
 
 ### Changed

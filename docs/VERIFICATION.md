@@ -23,6 +23,19 @@
 - 浏览器 console 是否出现 `slot entry crashed` 未直接观测；只能确认 Client 槽位注册处于 active。
 - Host 半是 Node 模块：**直接修改源码后不会热更新**，需要重启 DSH，或对插件行做一次 disable → enable（本次通过后者加载了修复）。
 
+## v0.3.0 双包与默认表情（2026-10-20）
+
+| 项目 | 证据 |
+| --- | --- |
+| 双包播种 | 重载后 `GET /api/memes/health` → `packs: 2, stickers: 18` |
+| 默认包 | catalog 第一项 `whale-gpt / 默认表情 / order 0 / 10 张`，全部 `image/webp`，单张 82–124KB |
+| 二创包保留 | 第二项 `whale-community / 鲸鱼娘二创梗图 / order 1 / 8 张`；首尾 id 与字节数与此前一致（未重新生成、未删除） |
+| 运行时素材 | `DSH_HOME/memes/assets` 共 18 个 `.webp`；旧版 12 张简笔图/旧默认包文件均已不存在 |
+| 工具目录 | `send_sticker action=list` 同时返回「默认表情」10 条与「鲸鱼娘二创梗图」8 条 |
+| GPT 原图拆分 | 两张 1024/1254px 透明背景图各拆 5 张；640×640 RGBA、白边完整；预览见 `assets/default/preview.png` 与 `assets/gpt/preview.png` |
+
+> 仍未验证：Web UI 中两个包标签页的实际渲染与切换——需要刷新页面后由用户确认。
+
 ## v0.2.1 纯图片发送（2026-10-20）
 
 | 项目 | 证据 |
