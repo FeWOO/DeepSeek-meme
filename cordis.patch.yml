@@ -1,0 +1,13 @@
+# DeepSeek Meme bundle patch.
+# One Host row owns storage, HTTP routes, the sticker tool, and prompt guidance;
+# the Client half declared in package.json renders the composer button + panel.
+- insert:
+    - id: deepseek-meme
+      name: dsh-deepseek-meme
+      config:
+        # Empty means: <DSH_HOME>/memes (created on first use).
+        dataDir: ''
+        # One uploaded sticker byte cap.
+        maxStickerBytes: 1048576
+        # Per-pack sticker cap.
+        maxStickersPerPack: 500

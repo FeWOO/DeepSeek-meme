@@ -1,0 +1,16 @@
+# Dependencies and build leftovers
+node_modules/
+dist/
+*.log
+
+# Local machine state
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# Runtime data / secrets
+.env
+.env.*
+*.local
