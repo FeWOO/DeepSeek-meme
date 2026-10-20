@@ -29,7 +29,7 @@ export const inject = [
 ]
 
 const PACKAGE_DIR = dirname(fileURLToPath(import.meta.url))
-const DEFAULT_ASSET_DIR = join(PACKAGE_DIR, 'assets', 'default')
+const ASSETS_ROOT = join(PACKAGE_DIR, 'assets')
 const ROUTE_PREFIX = '/api/memes'
 const CATALOG_VERSION = 1
 const MAX_PACKS = 50
@@ -258,30 +258,58 @@ class StickerStore {
       throw new Error(`catalog.json 不是合法 JSON，已保留原文件等待人工修复：${error.message}`)
     }
     const catalog = this.#validateCatalog(parsed)
-    await this.#syncBundledPack(catalog)
+    await this.#syncBundledPacks(catalog)
     this.#catalog = catalog
     return this.#catalog
   }
 
-  async #readBundledManifest() {
+  /**
+   * Discover every shipped pack: any `assets/<name>/manifest.json` directory.
+   * `default` is seeded first; the remaining packs follow alphabetically.
+   */
+  async #listBundledManifests() {
+    let entries
     try {
-      const manifestText = await fs.readFile(join(DEFAULT_ASSET_DIR, 'manifest.json'), 'utf8')
-      const manifest = JSON.parse(manifestText)
-      return typeof manifest === 'object' && manifest !== null ? manifest : undefined
+      entries = await fs.readdir(ASSETS_ROOT, { withFileTypes: true })
     } catch {
-      return undefined
+      return []
     }
+    const manifests = []
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue
+      const dir = join(ASSETS_ROOT, entry.name)
+      try {
+        const text = await fs.readFile(join(dir, 'manifest.json'), 'utf8')
+        const manifest = JSON.parse(text)
+        if (typeof manifest !== 'object' || manifest === null) continue
+        const sourcePack = typeof manifest.pack === 'object' && manifest.pack !== null ? manifest.pack : {}
+        manifests.push({
+          dir,
+          name: entry.name,
+          manifest,
+          packId: slug(sourcePack.id, entry.name),
+        })
+      } catch {
+        continue
+      }
+    }
+    manifests.sort((a, b) => {
+      if (a.name === 'default') return -1
+      if (b.name === 'default') return 1
+      return a.name.localeCompare(b.name)
+    })
+    return manifests
   }
 
-  /** Materialize the bundled pack, copying its assets into the runtime library. */
-  async #buildBundledPack(manifest) {
+  /** Materialize one bundled pack, copying its assets into the runtime library. */
+  async #buildBundledPack(manifest, sourceDir, index) {
     const sourcePack = typeof manifest.pack === 'object' && manifest.pack !== null ? manifest.pack : {}
-    const packId = slug(sourcePack.id, 'whale-default')
+    const packId = slug(sourcePack.id, `bundled-${index}`)
     const pack = {
       id: packId,
-      name: cleanName(sourcePack.name, '鲸鱼娘日常'),
+      name: cleanName(sourcePack.name, '默认表情'),
       description: cleanMeaning(sourcePack.description),
-      order: 0,
+      order: Number.isFinite(sourcePack.order) ? sourcePack.order : index,
       bundled: true,
       createdAt: now(),
       stickers: [],
@@ -295,7 +323,7 @@ class StickerStore {
       if (mediaType === undefined) continue
       let data
       try {
-        data = await fs.readFile(join(DEFAULT_ASSET_DIR, file))
+        data = await fs.readFile(join(sourceDir, file))
       } catch {
         continue
       }
@@ -324,9 +352,9 @@ class StickerStore {
 
   async #seed() {
     const catalog = { version: CATALOG_VERSION, packs: [] }
-    const manifest = await this.#readBundledManifest()
-    if (manifest !== undefined) {
-      const pack = await this.#buildBundledPack(manifest)
+    const manifests = await this.#listBundledManifests()
+    for (const [index, entry] of manifests.entries()) {
+      const pack = await this.#buildBundledPack(entry.manifest, entry.dir, index)
       if (pack !== undefined) catalog.packs.push(pack)
     }
     await this.#writeCatalog(catalog)
@@ -334,25 +362,59 @@ class StickerStore {
   }
 
   /**
-   * Replace an older bundled pack when the shipped manifest declares a new
-   * pack id. Same-id manifests stay untouched so user edits (rename, extra
-   * stickers) survive plugin updates.
+   * Keep the runtime catalog in sync with every shipped pack:
+   *  - add packs whose manifest is new;
+   *  - drop bundled packs whose manifest disappeared;
+   *  - refresh bundled pack order, but never overwrite user edits (name,
+   *    extra stickers, changed meanings) on packs that still exist.
    */
-  async #syncBundledPack(catalog) {
-    const manifest = await this.#readBundledManifest()
-    if (manifest === undefined) return
-    const sourcePack = typeof manifest.pack === 'object' && manifest.pack !== null ? manifest.pack : {}
-    const bundledPackId = slug(sourcePack.id, 'whale-default')
-    if (catalog.packs.some((pack) => pack.id === bundledPackId)) return
-    const stale = catalog.packs.filter((pack) => pack.bundled === true)
-    if (stale.length > 0) {
-      catalog.packs = catalog.packs.filter((pack) => pack.bundled !== true)
+  async #syncBundledPacks(catalog) {
+    const manifests = await this.#listBundledManifests()
+    if (manifests.length === 0) return
+    const wanted = new Map(
+      manifests.map((entry, index) => {
+        const sourcePack = typeof entry.manifest.pack === 'object' && entry.manifest.pack !== null ? entry.manifest.pack : {}
+        return [
+          entry.packId,
+          {
+            ...entry,
+            index,
+            order: Number.isFinite(sourcePack.order) ? sourcePack.order : index,
+          },
+        ]
+      }),
+    )
+    let changed = false
+    const stale = []
+    const kept = []
+    for (const pack of catalog.packs) {
+      if (pack.bundled === true && !wanted.has(pack.id)) {
+        stale.push(pack)
+        changed = true
+        continue
+      }
+      kept.push(pack)
+      const spec = wanted.get(pack.id)
+      if (spec !== undefined && pack.order !== spec.order) {
+        pack.order = spec.order
+        changed = true
+      }
     }
-    const pack = await this.#buildBundledPack(manifest)
-    if (pack === undefined) return
-    catalog.packs.unshift(pack)
-    await this.#writeCatalog(catalog)
-    await this.#deleteStickerFiles(stale.flatMap((item) => item.stickers))
+    catalog.packs = kept
+    for (const [index, entry] of manifests.entries()) {
+      if (catalog.packs.some((pack) => pack.id === entry.packId)) continue
+      const pack = await this.#buildBundledPack(entry.manifest, entry.dir, index)
+      if (pack !== undefined) {
+        catalog.packs.push(pack)
+        changed = true
+      }
+    }
+    if (changed) {
+      await this.#writeCatalog(catalog)
+      if (stale.length > 0) {
+        await this.#deleteStickerFiles(stale.flatMap((pack) => pack.stickers))
+      }
+    }
   }
 
   #validateCatalog(value) {
