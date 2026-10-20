@@ -103,29 +103,25 @@
 
 ### 5.1 用户发表情
 
-目标：用户点一下表情，聊天流里立刻出现一张正常用户消息——图片 + 可读含义，模型也能看懂。
+目标：用户点一下表情，聊天流里只出现一张图片消息——**不带任何含义文字**，模型靠看图理解。
 
 1. Client `POST /api/memes/send`，body `{ sessionId, stickerId, mode? }`。
 2. Host 校验 session 存在于 `ctx.sessions`（或可解析的 live agent），并读取贴纸。
-3. Host 把图片读成字节，经 `ctx.attachments.saveImage({ data, mediaType })` 得到 `ImageAttachmentRef`。
-4. Host 构造一条用户消息内容：
-   - `{ type: 'text', text: '【表情包】<name>：<meaning>' }`
-   - `{ type: 'image', attachment: ref }`
-5. Host 调用 `ctx.sessionController.prompt({ requestId, sessionId, mode, content, clientTimeZone }, signal)` 投递。**第二个参数 `signal` 必传**（漏传会得到 `Cannot read properties of undefined (reading 'throwIfAborted')`）；实现里带 30s 超时。
-6. 浏览器收到 `{ accepted: true }` 后轻提示“已发送”，面板保持打开。
+3. Host 把图片读成字节，构造一条只含图片的用户消息内容：
+   - `{ type: 'image', mediaType, data: <canonical base64>, name: '<名称>.<ext>' }`
+   - 图片的 `name` 只作为附件提示，不会渲染成聊天文字。
+4. Host 调用 `ctx.sessionController.prompt({ requestId, sessionId, mode, content, clientTimeZone }, signal)` 投递；prompt 的 admission 会把 base64 图片提升为 durable attachment。**第二个参数 `signal` 必传**（漏传会得到 `Cannot read properties of undefined (reading 'throwIfAborted')`）；实现里带 30s 超时。
+5. 浏览器收到 `{ accepted: true }` 后轻提示“已发送”，面板保持打开。
 
 `POST /send` 会先检查 `ctx.sessions.get(sessionId)` 是否存在，避免给已关闭的会话投递；冷会话需要先有一条消息激活。
 
 选择这条路的原因：
 
 - 会话日志是唯一事实来源，用户消息必须走正常的 `user/message` 事件；自定义事件类型会破坏会话重开。
-- 内置的 `conversation.chat.user.content` / `conversation.chat.user.images` 会替我们渲染文字与图片，不需要替换原生渲染器。
-- 模型侧拿到的是标准用户消息内容；文字含义让非视觉模型也能理解。
+- 内置的 `conversation.chat.user.images` 会替我们渲染图片，不需要替换原生渲染器。
+- 用户明确要求“发表情包就单纯表情包”，因此**含义文字不随消息发出**；含义留在贴纸目录里供模型按需查询。当前会话模型需要支持图片输入（否则适配器看不到画面）。
 
-**风险 / 待验证**：`sessionController.prompt` 原本是 Remote 入口，Host 直接调用是否受调用方身份限制需在实现时验证。若被拒绝，降级顺序为：
-1. `ctx.agents.get(sessionId)` 拿到 live agent 后走 Agent 的 prompt / inbox 入口；
-2. 仍不可用时，改走 `ctx.conversation` 的 Host 侧等价入口（若存在）；
-3. 最后降级为“只插入输入框等用户发送”，并在 UI 明确提示。
+> v0.2.1 之前实现曾把 `【表情包】名称：含义` 作为 text block 一起发出；该行为已移除。
 
 ### 5.2 模型发表情
 
@@ -135,28 +131,29 @@
 // parameters
 {
   "action": "list" | "send",
-  "stickerId": "string（action=send 时必填）",
-  "note": "string（可选，比如想配的一句话）"
+  "stickerId": "string（action=send 时必填）"
 }
 ```
 
 - `action = list`：返回紧凑目录（包名 + 贴纸 id / 名称 / 含义 / 标签），供模型选择。
-- `action = send`：Host 读取贴纸 → 保存为 attachment → 返回 `ToolExecutionResult`，其内容块为：
+- `action = send`：Host 读取贴纸 → `attachments.saveImage` 得到 durable ref → 返回 canonical value，`output.render` 产出：
   - `{ type: 'text', text: '已发送表情包「<name>」（含义：<meaning>）' }`
   - `{ type: 'image', attachment: ref }`
-- 工具定义通过 `output.render(args, value)` 产出内容块；`presentResult` 提供结构化 meta 供 Client 的自定义 toolview 使用。
-- Client 在 `tool.call.toolview` 以 `key: 'send_sticker'` 注册气泡视图；未加载该视图时，内置 `tool.call.images` 仍会兜底展示图片。
+- Client 在 `tool.call.toolview` 以 `key: 'send_sticker'` 注册气泡视图，从工具结果内容块里取图片 ref，再用 slot 提供的 `loadImage` 显示。
 
 **为什么不用“assistant 消息里直接塞 image”**：当前生产适配器声明文本输出，assistant 消息不允许图片。用工具结果携带图片是官方支持的 `tool.call.images` 路径。
 
 ### 5.3 模型理解用户表情
 
-- 用户表情消息的文字部分固定包含 `name` 与 `meaning`（见 5.1），模型可直接理解。
-- 系统提示只注入一段简短说明：
+- 用户表情是一条**纯图片消息**（见 5.1），不附带含义文字；模型直接观察图片理解情绪与梗义。
+- 图片附件的 `name` 保留贴纸名称（如 `大胆的想法.webp`），作为额外的弱提示，不进入聊天气泡。
+- 系统提示注入一段简短说明：
 
-  > 用户可能发送表情包，消息文字会带「【表情包】名称：含义」。你也可以用 `send_sticker` 工具查看或回发表情；只在情绪/语气合适时使用，通常一次回复最多一张。
+  > 用户发来的表情包是一条纯图片消息，不会附带含义文字；请直接观察图片理解它的情绪和梗义。需要回发表情或确认目录时，使用 `send_sticker` 工具（先 `action="list"` 查看全部表情的 id、名称、含义和标签）。
 
 - 完整目录不进系统提示（token 成本），由 `send_sticker action=list` 按需拉取。
+- 含义数据（name / meaning / tags）仍保存在目录里：模型需要精确确认某个梗时可以查目录；用户新加的表情也能通过 `PATCH` 补充含义。
+- 注意：这条链路要求当前会话模型支持图片输入。纯文本模型看不到画面，只依靠文件名无法理解梗图，切换模型时应意识到这一点。
 
 ## 6. 客户端设计
 
@@ -176,7 +173,7 @@
 - 面板默认收起；展开后：
   - 顶部：包标签页（横向滚动）+ “＋ 新建包”；
   - 网格：每格 64–72px，`object-fit: contain`；
-  - 每格单击 = 立即发送；悬停右上角出现“编辑”小按钮；
+  - 每格单击 = 立即发送（只发图片，不带含义文字）；悬停右上角出现“编辑”小按钮；
   - 底部：添加图片（`<input type=file multiple accept="image/*">`）、刷新、错误提示。
 - 添加流程：选图 → 上传到当前包 → 弹出内联编辑（名称预填文件名、含义可空）→ 保存。空含义会提示“模型只能看懂名称”，不阻塞保存。
 - 编辑弹窗：名称、含义、标签、所属包、删除；保存走 `PATCH`。

@@ -120,11 +120,11 @@
 ```
 
 - `mode` 可选：`queue`（默认）| `steer`；
-- Host 校验 session、读取贴纸、保存 attachment、写入一条用户消息（图片 + `【表情包】名称：含义` 文本）；
+- Host 校验 session、读取贴纸、把图片（canonical base64）作为**纯图片用户消息**投递；不含任何含义文字；
 - 成功：`{ "accepted": true }`；
 - 失败：`404 STICKER_NOT_FOUND` / `400 SESSION_INVALID` / `409 SESSION_NOT_LIVE` / `500 SEND_FAILED`。
 
-> 模型侧发送不走这个接口，而是 `send_sticker` 工具，详见 [ARCHITECTURE.md](ARCHITECTURE.md#52-模型发表情)。
+> 模型侧发送不走这个接口，而是 `send_sticker` 工具，详见 [ARCHITECTURE.md](ARCHITECTURE.md#52-模型发表情)。表情含义保存在目录中，用户消息本身只带图片。
 
 ## 健康检查
 
