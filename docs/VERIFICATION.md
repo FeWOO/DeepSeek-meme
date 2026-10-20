@@ -7,7 +7,7 @@
 | 项目 | 证据 |
 | --- | --- |
 | 插件安装/激活 | `plugin_manager install_bundle` → `application: applied`，`warnings: []`；插件行 `include:deepseek-meme` 为 `active` |
-| 默认包播种 | `GET /api/memes/health` → `{ ok: true, packs: 1, stickers: 12, dataDir: "C:\\Users\\EDY\\.dsh\\memes" }` |
+| 默认包播种 | `GET /api/memes/health` → `{ ok: true, packs: 1, stickers: 12, dataDir: "<DSH_HOME>/memes" }` |
 | 目录接口 | `GET /api/memes/catalog` 返回 1 个包、12 张表情，含 id/name/meaning/tags/url/尺寸 |
 | 素材读取 | `GET /api/memes/assets/st_99ff69f7b225` → `200`，`Content-Type: image/png`，32819 bytes |
 | 包/贴纸 CRUD | 创建临时包 → 上传 `angry.png` → 改含义/标签 → 删除包 → 目录恢复为 12 张（素材文件清理） |
