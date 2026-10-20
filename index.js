@@ -733,7 +733,7 @@ function createToolDefinition(ctx, store) {
   return {
     name: 'send_sticker',
     description:
-      'Send a sticker image to the user. User-sent stickers also arrive as plain images without captions, so understand them visually. In casual conversation (greetings, thanks, confirmations, reactions, banter) use stickers proactively; when the user asks you to perform a task, finish the task first and use at most one sticker as an accent. Never substitute a sticker for a needed text answer. Call with action="list" first to see the available stickers, their ids, names, meanings and tags; then call action="send" with a stickerId.',
+      'Send a sticker image to the user. User-sent stickers also arrive as plain images without captions, so understand them visually. In casual conversation (greetings, thanks, confirmations, reactions, banter) use stickers proactively; when the user asks you to perform a task, finish the task first and use at most one sticker as an accent. Never substitute a sticker for a needed text answer. Call with action="list" first to see the available stickers, their ids, names, meanings and tags; then call action="send" with a stickerId. After a successful send, put the returned markdown image at the start of your reply so the user sees it inline.',
     parameters: {
       type: 'object',
       additionalProperties: false,
@@ -761,12 +761,14 @@ function createToolDefinition(ctx, store) {
           stickerId: { type: 'string' },
           name: { type: 'string' },
           meaning: { type: 'string' },
+          markdown: { type: 'string' },
           image: imageSchema,
         },
       },
       render(_args, value) {
         if (value !== null && typeof value === 'object' && value.image !== undefined) {
-          const text = typeof value.message === 'string' ? value.message : '已发送表情包'
+          const base = typeof value.message === 'string' ? value.message : '已发送表情包'
+          const text = typeof value.markdown === 'string' ? `${base}\n\n${value.markdown}` : base
           return [
             { type: 'text', text },
             { type: 'image', attachment: value.image },
@@ -804,12 +806,20 @@ function createToolDefinition(ctx, store) {
         name: `${found.sticker.name}${EXTENSION_BY_MEDIA[found.sticker.mediaType]}`,
       })
       const meaning = found.sticker.meaning.length > 0 ? `（${found.sticker.meaning}）` : ''
+      let origin = ''
+      try {
+        origin = ctx.webServer.getOrigin()
+      } catch {
+        origin = ''
+      }
+      const markdownUrl = `${origin}${ROUTE_PREFIX}/assets/${found.sticker.id}?size=150`
       return {
         ok: true,
         message: `已发送表情包「${found.sticker.name}」${meaning}`,
         stickerId: found.sticker.id,
         name: found.sticker.name,
         meaning: found.sticker.meaning,
+        markdown: `![${found.sticker.name}](${markdownUrl})`,
         image: {
           attachmentId: ref.attachmentId,
           mediaType: ref.mediaType,
@@ -1037,7 +1047,7 @@ export function apply(ctx, config = {}) {
       ctx.systemPrompt.section({
         name: 'tool:send_sticker',
         order: 115,
-        text: '用户发来的表情包是一条纯图片消息，不会附带含义文字；请直接观察图片理解它的情绪和梗义。闲聊、问候、答谢、确认、撒娇等非任务对话，可以主动调用 send_sticker 回一张合适的表情；用户让你执行任务时以完成任务为主，表情只作点缀。每次回复最多一张。需要确认目录时用 action="list" 查看表情的 id、名称、含义和标签。',
+        text: '用户发来的表情包是一条纯图片消息，不会附带含义文字；请直接观察图片理解它的情绪和梗义。闲聊、问候、答谢、确认、撒娇等非任务对话，可以主动调用 send_sticker 回一张合适的表情；用户让你执行任务时以完成任务为主，表情只作点缀。每次回复最多一张。调用 send_sticker 成功后，把工具结果里的 markdown 图片（![...](...)）放进回复开头，让用户直接看到表情；工具卡片默认是折叠的。需要确认目录时用 action="list" 查看表情的 id、名称、含义和标签。',
       }),
     )
 
