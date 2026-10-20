@@ -1,7 +1,7 @@
 {
   "name": "dsh-deepseek-meme",
-  "version": "0.2.1",
-  "description": "DeepSeek Meme：DSH 表情包插件——社区二创梗图互发、一键添加与发送，模型也能读懂每个表情的含义。",
+  "version": "0.3.0",
+  "description": "DeepSeek Meme：DSH 表情包插件——GPT 绘制的默认表情 + 社区二创梗图双包，一键添加与发送，模型能读懂每个表情的含义。",
   "private": true,
   "type": "module",
   "main": "index.js",
@@ -16,7 +16,8 @@
     "client.js",
     "cordis.patch.yml",
     "locale/*.json",
-    "assets/**/*"
+    "assets/default/**/*",
+    "assets/community/**/*"
   ],
   "keywords": [
     "deepseek",
