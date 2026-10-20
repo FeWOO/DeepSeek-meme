@@ -23,6 +23,17 @@
 - 浏览器 console 是否出现 `slot entry crashed` 未直接观测；只能确认 Client 槽位注册处于 active。
 - Host 半是 Node 模块：**直接修改源码后不会热更新**，需要重启 DSH，或对插件行做一次 disable → enable（本次通过后者加载了修复）。
 
+## v0.2.1 纯图片发送（2026-10-20）
+
+| 项目 | 证据 |
+| --- | --- |
+| 只发图片 | `POST /api/memes/send`（mode=steer，sticker=吃饱饱）→ `{ accepted: true }`；下一条用户消息只含一个 640×626 WebP image block，没有 `【表情包】…` text block |
+| 模型看图理解 | 纯图片消息到达后，模型能直接识别画面与图内文字（“吃饱饱~摸摸肚子”），无需依赖含义文字 |
+| 含义仍可用 | 目录仍保留 name/meaning/tags；`send_sticker action=list` 返回完整梗义，模型需要精确确认时可查 |
+| 附件提示 | 图片 attachment 的 `name` 仍为贴纸名（`吃饱饱.webp`），作为弱提示，不渲染成聊天文字 |
+
+> 限制：这条链路依赖当前会话模型支持图片输入；切换到纯文本模型时模型看不到画面，只靠附件名不足以理解梗图。
+
 ## v0.2.0 社区梗图包（2026-10-20）
 
 | 项目 | 证据 |
