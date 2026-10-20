@@ -262,21 +262,25 @@ class StickerStore {
     } catch (error) {
       throw new Error(`catalog.json 不是合法 JSON，已保留原文件等待人工修复：${error.message}`)
     }
-    this.#catalog = this.#validateCatalog(parsed)
+    const catalog = this.#validateCatalog(parsed)
+    await this.#syncBundledPack(catalog)
+    this.#catalog = catalog
     return this.#catalog
   }
 
-  async #seed() {
-    const empty = { version: CATALOG_VERSION, packs: [] }
-    let manifest
+  async #readBundledManifest() {
     try {
       const manifestText = await fs.readFile(join(DEFAULT_ASSET_DIR, 'manifest.json'), 'utf8')
-      manifest = JSON.parse(manifestText)
+      const manifest = JSON.parse(manifestText)
+      return typeof manifest === 'object' && manifest !== null ? manifest : undefined
     } catch {
-      await this.#writeCatalog(empty)
-      return empty
+      return undefined
     }
-    const sourcePack = manifest && typeof manifest.pack === 'object' && manifest.pack !== null ? manifest.pack : {}
+  }
+
+  /** Materialize the bundled pack, copying its assets into the runtime library. */
+  async #buildBundledPack(manifest) {
+    const sourcePack = typeof manifest.pack === 'object' && manifest.pack !== null ? manifest.pack : {}
     const packId = slug(sourcePack.id, 'whale-default')
     const pack = {
       id: packId,
@@ -305,6 +309,8 @@ class StickerStore {
       const target = join(this.#assetsDir, `${stickerId}${extension}`)
       await fs.writeFile(target, data)
       const size = imageSize(data, mediaType)
+      const widthHint = Number(entry.width)
+      const heightHint = Number(entry.height)
       pack.stickers.push({
         id: stickerId,
         name: cleanName(entry.name, file),
@@ -313,14 +319,45 @@ class StickerStore {
         file: `${stickerId}${extension}`,
         mediaType,
         bytes: data.length,
-        width: size?.width ?? 0,
-        height: size?.height ?? 0,
+        width: Number.isFinite(widthHint) && widthHint > 0 ? widthHint : (size?.width ?? 0),
+        height: Number.isFinite(heightHint) && heightHint > 0 ? heightHint : (size?.height ?? 0),
         createdAt: now(),
       })
     }
-    const catalog = { version: CATALOG_VERSION, packs: pack.stickers.length > 0 ? [pack] : [] }
+    return pack.stickers.length > 0 ? pack : undefined
+  }
+
+  async #seed() {
+    const catalog = { version: CATALOG_VERSION, packs: [] }
+    const manifest = await this.#readBundledManifest()
+    if (manifest !== undefined) {
+      const pack = await this.#buildBundledPack(manifest)
+      if (pack !== undefined) catalog.packs.push(pack)
+    }
     await this.#writeCatalog(catalog)
     return catalog
+  }
+
+  /**
+   * Replace an older bundled pack when the shipped manifest declares a new
+   * pack id. Same-id manifests stay untouched so user edits (rename, extra
+   * stickers) survive plugin updates.
+   */
+  async #syncBundledPack(catalog) {
+    const manifest = await this.#readBundledManifest()
+    if (manifest === undefined) return
+    const sourcePack = typeof manifest.pack === 'object' && manifest.pack !== null ? manifest.pack : {}
+    const bundledPackId = slug(sourcePack.id, 'whale-default')
+    if (catalog.packs.some((pack) => pack.id === bundledPackId)) return
+    const stale = catalog.packs.filter((pack) => pack.bundled === true)
+    if (stale.length > 0) {
+      catalog.packs = catalog.packs.filter((pack) => pack.bundled !== true)
+    }
+    const pack = await this.#buildBundledPack(manifest)
+    if (pack === undefined) return
+    catalog.packs.unshift(pack)
+    await this.#writeCatalog(catalog)
+    await this.#deleteStickerFiles(stale.flatMap((item) => item.stickers))
   }
 
   #validateCatalog(value) {
