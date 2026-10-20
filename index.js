@@ -164,11 +164,6 @@ function requestId() {
   return `meme-${now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
 }
 
-function formatStickerBubble(sticker) {
-  const meaning = sticker.meaning.length > 0 ? sticker.meaning : '未填写含义'
-  return `【表情包】${sticker.name}：${meaning}`
-}
-
 function catalogView(catalog) {
   return {
     version: catalog.version,
@@ -675,7 +670,7 @@ function createToolDefinition(ctx, store) {
   return {
     name: 'send_sticker',
     description:
-      'Send a sticker image to the user. Call with action="list" first to see the available stickers, their ids, names, meanings and tags. Then call action="send" with a stickerId to post that sticker into the conversation. Use stickers sparingly: only when the emotional tone genuinely fits, at most one per reply, and never as a substitute for answering in text.',
+      'Send a sticker image to the user. User-sent stickers also arrive as plain images without captions, so understand them visually. Call with action="list" first to see the available stickers, their ids, names, meanings and tags. Then call action="send" with a stickerId to post that sticker into the conversation. Use stickers sparingly: only when the emotional tone genuinely fits, at most one per reply, and never as a substitute for answering in text.',
     parameters: {
       type: 'object',
       additionalProperties: false,
@@ -887,11 +882,11 @@ export function apply(ctx, config = {}) {
                     sessionId,
                     mode: normalizeMode(body.mode),
                     content: [
-                      { type: 'text', text: formatStickerBubble(sticker) },
                       {
                         type: 'image',
                         mediaType: sticker.mediaType,
                         data: data.toString('base64'),
+                        // Attachment name stays available as a hint; the chat row shows only the image.
                         name: `${sticker.name}${extension}`,
                       },
                     ],
@@ -918,7 +913,7 @@ export function apply(ctx, config = {}) {
       ctx.systemPrompt.section({
         name: 'tool:send_sticker',
         order: 115,
-        text: '用户发来的表情包会以「【表情包】名称：含义」的文字说明出现，你可以据此理解对方的情绪。需要回发时使用 send_sticker 工具（先 action="list" 查看可用表情）。',
+        text: '用户发来的表情包是一条纯图片消息，不会附带含义文字；请直接观察图片理解它的情绪和梗义。需要回发表情或确认目录时，使用 send_sticker 工具（先 action="list" 查看全部表情的 id、名称、含义和标签）。',
       }),
     )
 
