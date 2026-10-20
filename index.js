@@ -845,6 +845,8 @@ export function apply(ctx, config = {}) {
     ? configuredSize
     : DEFAULT_MESSAGE_STICKER_SIZE
   const store = new StickerStore(dataDir, { maxStickerBytes, maxStickersPerPack })
+  /** Small asset renditions for inline Markdown previews (`?size=150`). */
+  const smallAssetCache = new Map()
 
   ctx.effect(() => {
     const disposers = []
@@ -876,6 +878,28 @@ export function apply(ctx, config = {}) {
             if (method === 'GET' && segments.length === 2 && segments[0] === 'assets') {
               const { sticker } = await store.requireSticker(segments[1])
               const data = await store.readStickerBytes(sticker)
+              const requestedSize = Number(url.searchParams.get('size'))
+              if (Number.isInteger(requestedSize) && requestedSize >= 64 && requestedSize <= 240) {
+                const cacheKey = `${sticker.id}:${requestedSize}`
+                let rendition = smallAssetCache.get(cacheKey)
+                if (rendition === undefined) {
+                  const ref = await ctx.attachments.saveImage({
+                    data,
+                    mediaType: sticker.mediaType,
+                    name: `${sticker.name}${EXTENSION_BY_MEDIA[sticker.mediaType]}`,
+                  })
+                  const small = await ctx.attachments.readImageRequest(ref, {
+                    width: requestedSize,
+                    height: requestedSize,
+                    maxBytes: 512 * 1024,
+                  })
+                  rendition = { data: Buffer.from(small.data), mediaType: small.mediaType }
+                  if (smallAssetCache.size > 400) smallAssetCache.clear()
+                  smallAssetCache.set(cacheKey, rendition)
+                }
+                sendBytes(res, rendition.data, rendition.mediaType)
+                return
+              }
               sendBytes(res, data, sticker.mediaType)
               return
             }
