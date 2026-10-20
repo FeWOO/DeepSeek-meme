@@ -51,23 +51,23 @@
   "version": 1,
   "packs": [
     {
-      "id": "whale-default",
-      "name": "鲸鱼娘日常",
-      "description": "默认表情包：开心、疑惑、无语、吃米饭……",
+      "id": "whale-community",
+      "name": "鲸鱼娘二创梗图",
+      "description": "社区二创版鲸鱼娘梗图……",
       "order": 0,
       "bundled": true,
       "createdAt": 1760000000000,
       "stickers": [
         {
           "id": "st_8f3c1a2b",
-          "name": "开心",
-          "meaning": "很开心、心情很好，可用于打招呼或表达愉快",
-          "tags": ["开心", "高兴"],
-          "file": "st_8f3c1a2b.png",
-          "mediaType": "image/png",
-          "bytes": 18234,
-          "width": 256,
-          "height": 256,
+          "name": "DeepSeek完蛋了",
+          "meaning": "翻车、崩了、想跑路时用：哭着拖行李箱的夸张自嘲",
+          "tags": ["完蛋", "跑路", "翻车", "哭"],
+          "file": "st_8f3c1a2b.webp",
+          "mediaType": "image/webp",
+          "bytes": 64790,
+          "width": 640,
+          "height": 636,
           "createdAt": 1760000000000
         }
       ]
@@ -90,9 +90,12 @@
 - 数据目录：配置 `dataDir`；为空时使用 `join(DSH_HOME, 'memes')`（`DSH_HOME` 缺省 `~/.dsh`）。
 - 目录不存在时创建；`catalog.json` 不存在时播种 `assets/default/`：
   1. 读取随包 `manifest.json`；
-  2. 复制图片到 `memes/assets/`；
+  2. 复制图片到 `memes/assets/`（可用 manifest 提供 `width/height`）；
   3. 生成稳定 id 与 catalog。
-  播种只执行一次；如果用户删除了默认包，不自动重建（避免“删了又回来”）。
+- **默认包迁移**：每次加载 catalog 时比较 `manifest.pack.id` 与现有 bundled 包：
+  - 相同 → 保留（用户改名、加图、改含义不会被覆盖）；
+  - 不同 → 移除旧 bundled 包及其素材文件，播种新默认包；用户自建包保留。
+  因此“换一套默认梗图”只需要替换 `assets/default/` 并给 `pack.id` 换一个新值。
 - 写入策略：所有目录变更串行经过同一个 Promise 队列；先写 `catalog.json.tmp` 再 `rename` 覆盖，避免半写文件。
 - 素材文件写入：先确认大小与媒体类型，再写临时文件并 rename；删除贴纸时先改 catalog，再尽力删除文件。
 

@@ -11,6 +11,19 @@
 - 设计文档：架构、HTTP API、开发与验证、路线图。
 - 默认表情包目录 `assets/default/`。
 
+## [0.2.0] - 2026-10-20
+
+### Changed
+
+- 默认表情包替换为社区二创「鲸鱼娘二创梗图」：8 张 640px WebP 梗图（举手开心 / DeepSeek完蛋了 / 她不是生来就只有战火 / 用户造反 / 瞪你 / 给我跪下 / 吃饱饱 / 大胆的想法），每张都带模型可读的中文含义与标签。
+- 插件图标改用新默认包的 `happy-point` 头像（`assets/default/icon.png`）；删除旧 `icon.svg`。
+- 新增默认包迁移：`manifest.pack.id` 变化时自动移除旧 bundled 包并重新播种，用户自建包与编辑保留。
+
+### Added
+
+- `manifest.json` 支持显式 `width/height`（WebP 也能在 UI 中拿到正确尺寸）。
+- [默认梗图说明](docs/ASSETS.md)。
+
 ## [0.1.0] - 2026-10-20
 
 ### Added

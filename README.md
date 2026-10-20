@@ -2,7 +2,7 @@
 
 > 给 DeepSeek Harness（DSH）做一个像微信 / QQ 那样的表情包插件：**主人一键发，鲸鱼娘看得懂，还能回发**。
 
-![status](https://img.shields.io/badge/status-v0.1.0--dev-1d6bb8)
+![status](https://img.shields.io/badge/status-v0.2.0-1d6bb8)
 ![license](https://img.shields.io/badge/license-MIT-0b2a5b)
 
 ## 这是什么
@@ -12,9 +12,10 @@ DSH 的对话里一直没有“表情包”这个位置：用户只能打字，�
 1. **模型选择栏旁的入口**：一个小按钮，点开就是表情面板，点一下表情立即发出。
 2. **一键添加**：选择图片文件即可收藏进表情包，按包分组；名称和含义可以随手补。
 3. **模型能理解**：每个表情都带 `name / meaning / tags`，用户发图时会以可读文字把含义带进对话；模型也有 `send_sticker` 工具，能反过来给主人发表情。
-4. **本地优先**：表情素材保存在本机 `DSH_HOME/memes`，不联网抓取，不上传第三方。
+4. **社区二创梗图**：默认包收录 8 张社区二创鲸鱼娘梗图（翻车、战火、造反、瞪人、吃饱饱、大胆的想法……），模型能读懂梗义并和你互发；也可以随时换成自己的图。
+5. **本地优先**：表情素材保存在本机 `DSH_HOME/memes`，不联网抓取，不上传第三方。
 
-> 当前状态：**v0.1.0 MVP 已安装并跑通核心链路**（存储、HTTP 路由、模型工具、用户发送、Client 槽位注册）。视觉验收（按钮位置、面板样式、深浅色主题）仍需要你在页面上实际看一眼；详见 [验证记录](docs/VERIFICATION.md)。
+> 当前状态：**v0.2.0 社区梗图版已安装**。默认包已替换为 8 张社区二创梗图；存储、HTTP 路由、模型工具、用户发送、Client 槽位注册均已跑通。视觉验收（按钮位置、面板样式、深浅色主题）仍需要你在页面上实际看一眼；详见 [验证记录](docs/VERIFICATION.md)。
 
 ## 功能清单
 
@@ -26,7 +27,7 @@ DSH 的对话里一直没有“表情包”这个位置：用户只能打字，�
 | 一键添加本地图片 | ✅ 已实现 | 支持 PNG / JPEG / WebP / GIF，上传/改/删均已冒烟 |
 | 表情编辑（名称 / 含义 / 标签 / 移动包） | ✅ 已实现 | 面板内弹层编辑 |
 | `send_sticker` 模型工具 | ✅ 已验证 | 目录查询与发表情均实测通过 |
-| 默认表情包「鲸鱼娘日常」 | ✅ 已收录 | 12 张 256×256 PNG，首次运行自动播种 |
+| 默认表情包「鲸鱼娘二创梗图」 | ✅ 已收录 | 8 张 640px WebP 社区二创梗图，首次运行自动播种（旧默认包会自动迁移替换） |
 | 模型理解用户表情 | ✅ 已实现 | 消息文字携带 `【表情包】名称：含义`，另有系统提示说明 |
 | 视觉验收（真实页面） | ⚠️ 待用户确认 | 当前环境无法截图；见验证记录 |
 
@@ -38,13 +39,14 @@ DeepSeek-meme/
 ├─ client.js             # Web Client 半：按钮、面板、工具卡片渲染
 ├─ cordis.patch.yml      # bundle patch：插入一条 Host 插件行
 ├─ package.json          # DSH bundle / client 清单
-├─ icon.svg              # 插件图标
 ├─ locale/               # 插件管理页显示用的标题与描述
-├─ assets/default/       # 随包分发的默认表情包（首次运行播种）
+├─ assets/default/       # 默认表情包（社区二创梗图，首次运行播种）
 └─ docs/
    ├─ ARCHITECTURE.md    # 架构、数据模型、会话写入策略、槽位选择
    ├─ API.md             # /api/memes 路由契约
+   ├─ ASSETS.md          # 默认梗图含义、来源说明与替换方法
    ├─ DEVELOPMENT.md     # 开发、安装、验证、Git 工作流
+   ├─ VERIFICATION.md    # 实测证据与限制
    └─ ROADMAP.md         # 里程碑与范围
 ```
 
@@ -77,6 +79,7 @@ Invoke-RestMethod "http://127.0.0.1:4652/api/memes/health"
 
 - [架构设计](docs/ARCHITECTURE.md)
 - [HTTP API 契约](docs/API.md)
+- [默认梗图含义与替换](docs/ASSETS.md)
 - [开发与验证](docs/DEVELOPMENT.md)
 - [验证记录](docs/VERIFICATION.md)
 - [路线图](docs/ROADMAP.md)
