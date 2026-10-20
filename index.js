@@ -840,20 +840,30 @@ export function apply(ctx, config = {}) {
               const { sticker } = await store.requireSticker(stickerId)
               const data = await store.readStickerBytes(sticker)
               const extension = EXTENSION_BY_MEDIA[sticker.mediaType]
-              const result = await ctx.sessionController.prompt({
-                requestId: requestId(),
-                sessionId,
-                mode: normalizeMode(body.mode),
-                content: [
-                  { type: 'text', text: formatStickerBubble(sticker) },
+              const controller = new AbortController()
+              const timer = setTimeout(() => controller.abort(), 30000)
+              let result
+              try {
+                result = await ctx.sessionController.prompt(
                   {
-                    type: 'image',
-                    mediaType: sticker.mediaType,
-                    data: data.toString('base64'),
-                    name: `${sticker.name}${extension}`,
+                    requestId: requestId(),
+                    sessionId,
+                    mode: normalizeMode(body.mode),
+                    content: [
+                      { type: 'text', text: formatStickerBubble(sticker) },
+                      {
+                        type: 'image',
+                        mediaType: sticker.mediaType,
+                        data: data.toString('base64'),
+                        name: `${sticker.name}${extension}`,
+                      },
+                    ],
                   },
-                ],
-              })
+                  controller.signal,
+                )
+              } finally {
+                clearTimeout(timer)
+              }
               sendJson(res, 200, { accepted: result?.accepted === true || result?.accepted === undefined })
               return
             }
