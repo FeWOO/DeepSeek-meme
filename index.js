@@ -733,7 +733,7 @@ function createToolDefinition(ctx, store) {
   return {
     name: 'send_sticker',
     description:
-      'Send a sticker image to the user. User-sent stickers also arrive as plain images without captions, so understand them visually. Call with action="list" first to see the available stickers, their ids, names, meanings and tags. Then call action="send" with a stickerId to post that sticker into the conversation. Use stickers sparingly: only when the emotional tone genuinely fits, at most one per reply, and never as a substitute for answering in text.',
+      'Send a sticker image to the user. User-sent stickers also arrive as plain images without captions, so understand them visually. In casual conversation (greetings, thanks, confirmations, reactions, banter) use stickers proactively; when the user asks you to perform a task, finish the task first and use at most one sticker as an accent. Never substitute a sticker for a needed text answer. Call with action="list" first to see the available stickers, their ids, names, meanings and tags; then call action="send" with a stickerId.',
     parameters: {
       type: 'object',
       additionalProperties: false,
@@ -1013,7 +1013,7 @@ export function apply(ctx, config = {}) {
       ctx.systemPrompt.section({
         name: 'tool:send_sticker',
         order: 115,
-        text: '用户发来的表情包是一条纯图片消息，不会附带含义文字；请直接观察图片理解它的情绪和梗义。需要回发表情或确认目录时，使用 send_sticker 工具（先 action="list" 查看全部表情的 id、名称、含义和标签）。',
+        text: '用户发来的表情包是一条纯图片消息，不会附带含义文字；请直接观察图片理解它的情绪和梗义。闲聊、问候、答谢、确认、撒娇等非任务对话，可以主动调用 send_sticker 回一张合适的表情；用户让你执行任务时以完成任务为主，表情只作点缀。每次回复最多一张。需要确认目录时用 action="list" 查看表情的 id、名称、含义和标签。',
       }),
     )
 
