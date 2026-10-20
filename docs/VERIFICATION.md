@@ -23,6 +23,16 @@
 - 浏览器 console 是否出现 `slot entry crashed` 未直接观测；只能确认 Client 槽位注册处于 active。
 - Host 半是 Node 模块：**直接修改源码后不会热更新**，需要重启 DSH，或对插件行做一次 disable → enable（本次通过后者加载了修复）。
 
+## v0.3.2 模型贴纸显示尺寸（2026-10-20）
+
+| 项目 | 证据 |
+| --- | --- |
+| 模型贴纸缩小 | `send_sticker` 工具卡内的贴纸图片 CSS 上限从 200px 降到 **150px**；用户发送仍是 180px |
+| 工具卡展开 | `send_sticker` toolview 调用 `useDisclosure().setExpanded(true)`，贴纸默认展开且不显示解释文字 |
+| 回复内不再贴原图 | 助手文本回复不再嵌入 640px 原始贴纸，避免看起来过大 |
+
+> 需要刷新页面加载 Client 改动后再确认观感。
+
 ## v0.3.1 表情消息小图（2026-10-20）
 
 | 项目 | 证据 |
