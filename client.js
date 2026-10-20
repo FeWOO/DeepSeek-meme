@@ -716,17 +716,16 @@ window.__ModuleLoader__.load({
     function StickerToolView(props) {
       const block = props.block
       const phase = props.phase
+      // Tool cards are collapsed by default; a sticker is the whole point, so
+      // force the card open when the settled result carries the image.
+      const disclosure = props.useDisclosure()
+      React.useEffect(() => {
+        if (!disclosure.expanded) disclosure.setExpanded(true)
+      }, [disclosure.expanded, disclosure.setExpanded])
       const image =
         phase === 'result' && block !== undefined && Array.isArray(block.content)
           ? block.content.find((item) => item !== null && typeof item === 'object' && item.type === 'image' && item.attachment !== undefined)
           : undefined
-      const text =
-        phase === 'result' && block !== undefined && Array.isArray(block.content)
-          ? block.content
-              .filter((item) => item !== null && typeof item === 'object' && item.type === 'text')
-              .map((item) => item.text)
-              .join('\n')
-          : ''
       const [url, setUrl] = React.useState(null)
       const attachmentId = image !== undefined && image.attachment !== undefined ? image.attachment.attachmentId : ''
 
@@ -749,7 +748,6 @@ window.__ModuleLoader__.load({
       return h(
         'div',
         { className: 'dsm-tool' },
-        text.length > 0 ? h('div', { className: 'dsm-tool-text' }, text) : null,
         url !== null
           ? h('img', { className: 'dsm-tool-img', src: url, alt: t('tool.alt'), draggable: false })
           : h('div', { className: 'dsm-tool-loading' }, t('panel.loading')),
@@ -820,7 +818,7 @@ window.__ModuleLoader__.load({
 .dsm-tool{display:flex;flex-direction:column;gap:5px;align-items:flex-start;padding:2px 0}
 .dsm-tool-pending{color:var(--dsw-alias-label-secondary);font-size:12px}
 .dsm-tool-text{color:var(--dsw-alias-label-secondary);font-size:12px;line-height:1.45}
-.dsm-tool-img{display:block;max-width:180px;max-height:180px;border-radius:12px;object-fit:contain;background:transparent}
+.dsm-tool-img{display:block;max-width:200px;max-height:200px;border-radius:12px;object-fit:contain;background:transparent}
 .dsm-tool-loading{color:var(--dsw-alias-label-secondary);font-size:12px}
 @media (max-width:520px){.dsm-hint{display:none}.dsm-panel{max-width:100%}}
 `
