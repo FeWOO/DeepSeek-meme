@@ -11,8 +11,9 @@
   ```
 
 - 状态码：`400` 参数错误、`404` 不存在、`409` 冲突、`413` 超过大小、`415` 媒体类型不允许、`500` 内部错误。
+- 主要错误码：`INVALID_JSON`、`PACK_NOT_FOUND`、`PACK_EXISTS`、`PACK_PROTECTED`、`PACK_LIMIT`、`STICKER_NOT_FOUND`、`STICKER_LIMIT`、`STICKER_TOO_LARGE`、`UNSUPPORTED_MEDIA`、`EMPTY_FILE`、`BODY_TOO_LARGE`、`SESSION_REQUIRED`、`SESSION_NOT_LIVE`、`STICKER_REQUIRED`。
 - 文本字段长度限制：`name` ≤ 40 字，`meaning` ≤ 200 字，`tags` 最多 8 个、每个 ≤ 16 字。
-- 所有响应带 `Cache-Control: no-store` 的接口是目录类；素材读取带长缓存（内容寻址 id）。
+- 目录类响应带 `Cache-Control: no-store`；素材读取带长缓存（内容寻址 id）。
 
 ## 目录
 
@@ -29,6 +30,7 @@
       "name": "鲸鱼娘日常",
       "description": "默认表情包",
       "order": 0,
+      "bundled": true,
       "stickers": [
         {
           "id": "st_8f3c1a2b",

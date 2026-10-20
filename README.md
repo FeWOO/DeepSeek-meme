@@ -14,20 +14,21 @@ DSH 的对话里一直没有“表情包”这个位置：用户只能打字，�
 3. **模型能理解**：每个表情都带 `name / meaning / tags`，用户发图时会以可读文字把含义带进对话；模型也有 `send_sticker` 工具，能反过来给主人发表情。
 4. **本地优先**：表情素材保存在本机 `DSH_HOME/memes`，不联网抓取，不上传第三方。
 
-> 当前状态：**项目骨架 / 设计阶段**。Host 与 Client 目前是占位文件，尚不可安装使用；实现按 [ROADMAP](docs/ROADMAP.md) 推进。
+> 当前状态：**v0.1.0 MVP 已安装并跑通核心链路**（存储、HTTP 路由、模型工具、用户发送、Client 槽位注册）。视觉验收（按钮位置、面板样式、深浅色主题）仍需要你在页面上实际看一眼；详见 [验证记录](docs/VERIFICATION.md)。
 
 ## 功能清单
 
 | 功能 | 状态 | 说明 |
 | --- | --- | --- |
-| 模型选择栏旁表情按钮 | 🚧 设计完成 | 挂在 `conversation.input.right` 槽位 |
-| 表情面板（分类 / 网格 / 最近使用） | 🚧 设计完成 | 挂在 `conversation.input.dock` 槽位 |
-| 点击表情一键发送 | 🚧 设计完成 | Host 写入用户消息（图片 + 含义文字） |
-| 一键添加本地图片 | 🚧 设计完成 | 支持 PNG / JPEG / WebP / GIF |
-| 表情编辑（名称 / 含义 / 标签 / 移动包） | 🚧 待实现 | 面板内联编辑 |
-| `send_sticker` 模型工具 | 🚧 设计完成 | 模型可查看并回发表情 |
-| 默认表情包「鲸鱼娘日常」 | 🚧 素材制作中 | 12 张 256×256 PNG |
-| 模型理解用户表情 | 🚧 设计完成 | 消息文字携带含义 + 工具查询目录 |
+| 模型选择栏旁表情按钮 | ✅ 已实现 | 挂在 `conversation.input.right` 槽位 |
+| 表情面板（分类 / 网格 / 添加 / 编辑） | ✅ 已实现 | 挂在 `conversation.input.dock` 槽位 |
+| 点击表情一键发送 | ✅ 已验证 | `POST /api/memes/send` 实测 `accepted: true` |
+| 一键添加本地图片 | ✅ 已实现 | 支持 PNG / JPEG / WebP / GIF，上传/改/删均已冒烟 |
+| 表情编辑（名称 / 含义 / 标签 / 移动包） | ✅ 已实现 | 面板内弹层编辑 |
+| `send_sticker` 模型工具 | ✅ 已验证 | 目录查询与发表情均实测通过 |
+| 默认表情包「鲸鱼娘日常」 | ✅ 已收录 | 12 张 256×256 PNG，首次运行自动播种 |
+| 模型理解用户表情 | ✅ 已实现 | 消息文字携带 `【表情包】名称：含义`，另有系统提示说明 |
+| 视觉验收（真实页面） | ⚠️ 待用户确认 | 当前环境无法截图；见验证记录 |
 
 ## 项目结构
 
@@ -47,22 +48,23 @@ DeepSeek-meme/
    └─ ROADMAP.md         # 里程碑与范围
 ```
 
-## 快速开始（开发期）
+## 快速开始
+
+插件已安装到当前 `desktop` profile（本地目录链接）。更新 Host 代码后需要重启 DSH，或对插件行做一次 disable → enable，才会加载新的 Node 模块；Client 改动在当前环境通常随 HMR 生效。
 
 ```powershell
-# 1. 语法检查
+# 语法检查
 node --check index.js
 node --check client.js
 
-# 2. 用 DSH 的插件管理器从目录安装（在会话里让模型调用）
-#    plugin_manager install_bundle target = "D:\Kz\DeepSeek Harness\DeepSeek-meme"
+# 手动安装（已经装过就跳过）
+#   plugin_manager install_bundle target = "D:\Kz\DeepSeek Harness\DeepSeek-meme"
 
-# 3. 验证槽位与工具
-#    cordis_inspect_query client Slots.listSubTree root=conversation.input.right
-#    cordis_inspect_query host Tool.listTools
+# 健康检查
+Invoke-RestMethod "http://127.0.0.1:4652/api/memes/health"
 ```
 
-安装、验证与排错的完整步骤见 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)。
+安装、验证与排错的完整步骤见 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)，本轮实测证据见 [docs/VERIFICATION.md](docs/VERIFICATION.md)。
 
 ## 设计原则
 
@@ -76,6 +78,7 @@ node --check client.js
 - [架构设计](docs/ARCHITECTURE.md)
 - [HTTP API 契约](docs/API.md)
 - [开发与验证](docs/DEVELOPMENT.md)
+- [验证记录](docs/VERIFICATION.md)
 - [路线图](docs/ROADMAP.md)
 - [变更日志](CHANGELOG.md)
 

@@ -1,19 +1,20 @@
 # 路线图
 
-## v0.1.0 — MVP（进行中）
+## v0.1.0 — MVP（已跑通核心链路）
 
 - [x] 项目骨架、bundle 清单、图标、locale、设计文档
-- [ ] Host：StickerStore（catalog.json + assets，原子写、串行写）
-- [ ] Host：默认包播种（`assets/default/manifest.json` + PNG）
-- [ ] Host：`/api/memes/{health,catalog,assets}` 读取路由
-- [ ] Host：`/api/memes/{packs,stickers}` 增删改路由
-- [ ] Host：`/api/memes/send` 用户表情写入会话
-- [ ] Host：`send_sticker` 工具（list / send）+ 系统提示段落
-- [ ] Client：模型选择栏旁按钮
-- [ ] Client：表情面板（包标签、网格、添加、编辑、删除）
-- [ ] Client：`send_sticker` 工具气泡视图
-- [ ] 默认表情包「鲸鱼娘日常」12 张素材
-- [ ] 安装到 `desktop` profile，完成冒烟验证 + 用户视觉验收
+- [x] Host：StickerStore（catalog.json + assets，原子写、串行写）
+- [x] Host：默认包播种（`assets/default/manifest.json` + PNG）
+- [x] Host：`/api/memes/{health,catalog,assets}` 读取路由
+- [x] Host：`/api/memes/{packs,stickers}` 增删改路由
+- [x] Host：`/api/memes/send` 用户表情写入会话
+- [x] Host：`send_sticker` 工具（list / send）+ 系统提示段落
+- [x] Client：模型选择栏旁按钮
+- [x] Client：表情面板（包标签、网格、添加、编辑、删除）
+- [x] Client：`send_sticker` 工具气泡视图
+- [x] 默认表情包「鲸鱼娘日常」12 张素材
+- [x] 安装到 `desktop` profile，完成路由/工具/槽位冒烟验证
+- [ ] 用户视觉验收（按钮位置、面板样式、深浅色）
 - [ ] 发布说明与截图
 
 ## v0.1.x — 打磨

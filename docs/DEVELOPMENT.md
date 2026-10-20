@@ -1,5 +1,7 @@
 # 开发与验证
 
+> 本轮的实测证据与限制见 [VERIFICATION.md](VERIFICATION.md)。
+
 ## 环境
 
 - Windows + DSH Desktop；当前 profile：`desktop`（`C:\Users\<user>\.dsh\profiles\desktop`）。
@@ -24,10 +26,12 @@ Get-Content locale\en.json -Raw | ConvertFrom-Json | Out-Null
 
 在会话中让模型调用 `plugin_manager`：
 
-- 安装（本地目录）：`action: install_bundle`，`target` 为项目绝对路径；
-- 查看结果：以返回的 `application` 与 `warnings` 为准，不以进程日志为准；
-- 更新：替换已安装包后需要**重启** DSH 才会加载新的 JavaScript 模块代；只改 Client 且 HMR 可用时会自动重载；
-- 卸载：`action: remove_bundle`。
+- 安装（本地目录）：`action: install_bundle`，`target` 为项目绝对路径；已安装到 `desktop` profile。
+- **更新 Host 代码**：直接改源码不会替换已加载的 Node 模块。二选一：
+  - 对插件行做一次禁用→启用：`set_plugin target=include:deepseek-meme enabled=false`，再 `enabled=true`；
+  - 重启 DSH。
+- 更新 Client 代码：通常由 HMR 重载；若页面无变化，刷新页面并检查浏览器 console。
+- 卸载：`action: remove_bundle`（target 用 `dsh-deepseek-meme`）。
 
 > 不要手写 profile 的 `package.json` / `cordis.patch.yml`，也不要直接在 profile 目录跑 pnpm；安装交给 `install_bundle`。
 
@@ -49,7 +53,13 @@ Get-Content locale\en.json -Raw | ConvertFrom-Json | Out-Null
 
 4. **会话写入**：调用 `POST /api/memes/send` 往一个测试 Session 发一张表情，确认聊天流出现用户图片消息，且下一轮模型能看到 `【表情包】...` 文字。
 
-5. **视觉**：本环境没有浏览器截图能力。安装成功、槽位注册成功都不等于视觉验收；需要用户在页面上实际查看按钮位置、面板布局、深浅色主题。验证结论要如实写“视觉未验证”。
+5. **视觉**：本环境没有浏览器截图能力。安装成功、槽位注册成功都不等于视觉验收；需要用户在页面上实际查看按钮位置、面板布局、深浅色主题。本轮结论已写入 [VERIFICATION.md](VERIFICATION.md)，视觉项保持“未验证”。
+
+## PowerShell 冒烟测试注意
+
+- `Invoke-RestMethod` 的 JSON 请求体在部分控制台编码下会把中文写成 `?`；测中文元数据（包名/含义）时用浏览器 fetch，或显式发送 UTF-8 字节。
+- 响应里的中文用 `[Console]::OutputEncoding = [Text.Encoding]::UTF8` 再打印；否则看起来像乱码，但服务端数据可能是对的。
+- 上传用 `-InFile <png> -ContentType image/png`，元数据放 `x-meme-*` 头，值先 `[uri]::EscapeDataString()`。
 
 ## 数据目录
 

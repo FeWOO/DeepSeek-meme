@@ -55,6 +55,7 @@
       "name": "鲸鱼娘日常",
       "description": "默认表情包：开心、疑惑、无语、吃米饭……",
       "order": 0,
+      "bundled": true,
       "createdAt": 1760000000000,
       "stickers": [
         {
@@ -107,8 +108,10 @@
 4. Host 构造一条用户消息内容：
    - `{ type: 'text', text: '【表情包】<name>：<meaning>' }`
    - `{ type: 'image', attachment: ref }`
-5. Host 调用 `ctx.sessionController.prompt({ requestId, sessionId, mode, content, clientTimeZone })` 投递。
+5. Host 调用 `ctx.sessionController.prompt({ requestId, sessionId, mode, content, clientTimeZone }, signal)` 投递。**第二个参数 `signal` 必传**（漏传会得到 `Cannot read properties of undefined (reading 'throwIfAborted')`）；实现里带 30s 超时。
 6. 浏览器收到 `{ accepted: true }` 后轻提示“已发送”，面板保持打开。
+
+`POST /send` 会先检查 `ctx.sessions.get(sessionId)` 是否存在，避免给已关闭的会话投递；冷会话需要先有一条消息激活。
 
 选择这条路的原因：
 
@@ -158,9 +161,9 @@
 
 | 位置 | 槽位 | 类型 | 用途 |
 | --- | --- | --- | --- |
-| 模型选择栏旁按钮 | `conversation.input.right` | list | 紧凑控制，位于模型选择器与发送键之间；`id=deepseek-meme-button` |
-| 表情面板 | `conversation.input.dock` | list | 输入卡上方的整行区域，适合可点击的网格；`id=deepseek-meme-panel` |
-| 模型表情气泡 | `tool.call.toolview` | keyed | `key=send_sticker` |
+| 模型选择栏旁按钮 | `conversation.input.right` | list | 紧凑控制，位于模型选择器与发送键之间；`id=deepseek-meme-button`，order 40 |
+| 表情面板 | `conversation.input.dock` | list | 输入卡上方的整行区域，适合可点击的网格；`id=deepseek-meme-panel`，order 10 |
+| 模型表情气泡 | `tool.call.toolview` | keyed | `key=send_sticker`，通过 `loadImage` 渲染工具结果里的 durable image |
 
 不选 `conversation.input.activity`：它是 single 槽位且有 `shadows-shipped-ui` 风险。
 
@@ -199,6 +202,8 @@
 ## 9. 兼容性与验证
 
 - 目标版本：DSH Desktop `0.2.1-rc.2`（当前 profile `desktop`）。
+- Host 半是 Node 模块：修改 `index.js` 后**不会热更新**，需要重启 DSH 或对插件行做 disable → enable；本轮联调就是用后者加载修复的。
+- Client 半的 `client.js` 是纯 JS module-loader 文件，改完刷新页面/等 HMR 即可；若页面没有变化，先检查浏览器 console 与 Slot 占位。
 - 只使用 `cordis_inspect_query` 能观测到的 Service / Slot / Tool 契约；不导入 `@deepseek-ai/dsh-client-ui-primitives` 等 Harness Client 包。
 - 验证方式：
   - `node --check` + JSON 解析；
