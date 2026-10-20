@@ -11,6 +11,18 @@
 - 设计文档：架构、HTTP API、开发与验证、路线图。
 - 默认表情包目录 `assets/default/`。
 
+## [0.3.4] - 2026-10-20
+
+### Added
+
+- 素材接口支持 `?size=64..240` 小图重采样（聊天内联预览用；默认 150）。
+- 商店截图声明 `screenshots.json`；README 增加 DSH 徽章与公开 GitHub 安装命令。
+- `package.json` 补齐 repository/homepage/bugs/keywords，供插件市场与 npm 识别。
+
+### Changed
+
+- 仓库转为公开，准备提交 awesome-dsh-plugin 社区目录（需等待仓库创建满 1 天的硬性门槛）。
+
 ## [0.3.3] - 2026-10-20
 
 ### Changed

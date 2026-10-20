@@ -2,7 +2,7 @@
 
 > 给 DeepSeek Harness（DSH）做一个像微信 / QQ 那样的表情包插件：**主人一键发，鲸鱼娘看得懂，还能回发**。
 
-![status](https://img.shields.io/badge/status-v0.3.2-1d6bb8)
+![status](https://img.shields.io/badge/status-v0.3.4-1d6bb8)
 ![license](https://img.shields.io/badge/license-MIT-0b2a5b)
 
 ## 这是什么
@@ -15,7 +15,7 @@ DSH 的对话里一直没有“表情包”这个位置：用户只能打字，�
 4. **两套随包表情**：默认包「默认表情」是 GPT 绘制的 10 张鲸鱼娘日常/工作贴纸；另有「鲸鱼娘二创梗图」8 张社区二创梗图，两个包独立保留，模型都能读懂梗义并和你互发。
 5. **本地优先**：表情素材保存在本机 `DSH_HOME/memes`，不联网抓取，不上传第三方。
 
-> 当前状态：**v0.3.2 双包版已安装**。默认包「默认表情」10 张、社区二创包 8 张；用户点表情**只发图片、不带含义文字**，并通过附件服务缩到 **180px** 后入会话（普通图片仍按原生 240px 上限显示）；模型发的贴纸在工具卡里显示为 **150px**。模型直接看图理解，含义保留在目录里供工具查询。视觉验收（按钮位置、面板样式、深浅色主题）仍需要你在页面上实际看一眼；详见 [验证记录](docs/VERIFICATION.md)。
+> 当前状态：**v0.3.4 双包版 / 公开仓库**。默认包「默认表情」10 张、社区二创包 8 张；用户点表情**只发图片、不带含义文字**，并通过附件服务缩到 **180px** 后入会话（普通图片仍按原生 240px 上限显示）；模型发的贴纸在工具卡里显示为 **150px**。模型直接看图理解，含义保留在目录里供工具查询。视觉验收（按钮位置、面板样式、深浅色主题）仍需要你在页面上实际看一眼；详见 [验证记录](docs/VERIFICATION.md)。
 
 ## 功能清单
 
@@ -56,7 +56,13 @@ DeepSeek-meme/
 
 ## 快速开始
 
-插件已安装到当前 `desktop` profile（本地目录链接）。更新 Host 代码后需要重启 DSH，或对插件行做一次 disable → enable，才会加载新的 Node 模块；Client 改动在当前环境通常随 HMR 生效。
+公开安装（GitHub）：
+
+```powershell
+dsh plugin add github:FeWOO/DeepSeek-meme
+```
+
+当前这台机器已安装到 `desktop` profile（本地目录链接）。更新 Host 代码后需要重启 DSH，或对插件行做一次 disable → enable，才会加载新的 Node 模块；Client 改动在当前环境通常随 HMR 生效。
 
 ```powershell
 # 语法检查
@@ -92,3 +98,5 @@ Invoke-RestMethod "http://127.0.0.1:4652/api/memes/health"
 ## License
 
 [MIT](LICENSE) © 2026 FeWOO
+
+[![](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)

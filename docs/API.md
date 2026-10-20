@@ -56,6 +56,7 @@
 返回图片字节。
 
 - `Content-Type`：记录的 `mediaType`；
+- 可选 `?size=64..240`：返回按长边缩放的临时展示版本（用于聊天内联小图，`?size=150`），默认返回原图；
 - `Cache-Control: public, max-age=31536000, immutable`；
 - 找不到返回 404。
 

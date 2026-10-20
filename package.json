@@ -1,10 +1,17 @@
 {
   "name": "dsh-deepseek-meme",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "DeepSeek Meme：DSH 表情包插件——GPT 绘制的默认表情 + 社区二创梗图双包，一键添加与发送，模型能读懂每个表情的含义。",
-  "private": true,
   "type": "module",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FeWOO/DeepSeek-meme.git"
+  },
+  "homepage": "https://github.com/FeWOO/DeepSeek-meme",
+  "bugs": {
+    "url": "https://github.com/FeWOO/DeepSeek-meme/issues"
+  },
   "exports": {
     ".": "./index.js",
     "./client": "./client.js",
@@ -17,12 +24,17 @@
     "cordis.patch.yml",
     "locale/*.json",
     "assets/default/**/*",
-    "assets/community/**/*"
+    "assets/community/**/*",
+    "README.md",
+    "LICENSE",
+    "screenshots.json"
   ],
   "keywords": [
     "deepseek",
+    "deepseek-harness",
     "harness",
     "dsh",
+    "dsh-plugin",
     "cordis",
     "plugin",
     "sticker",
