@@ -23,6 +23,19 @@
 - 浏览器 console 是否出现 `slot entry crashed` 未直接观测；只能确认 Client 槽位注册处于 active。
 - Host 半是 Node 模块：**直接修改源码后不会热更新**，需要重启 DSH，或对插件行做一次 disable → enable（本次通过后者加载了修复）。
 
+## v0.2.0 社区梗图包（2026-10-20）
+
+| 项目 | 证据 |
+| --- | --- |
+| 默认包迁移 | 重载 Host 后 `health` → `packs: 1, stickers: 8`；`catalog` → `id=whale-community、bundled=true`；运行时 `memes/assets` 只剩 8 个 `st_*.webp`，旧 `whale-default` 的 12 张 PNG 已清理 |
+| WebP 素材 | `GET /api/memes/assets/st_33359553cf2c` → `200`、`Content-Type: image/webp`、`64790` bytes，与 `assets/default/doomed.webp` 完全一致 |
+| 模型目录 | `send_sticker action=list` 返回 8 条新梗图（举手开心 / DeepSeek完蛋了 / 她不是生来就只有战火 / 用户造反 / 瞪你 / 给我跪下 / 吃饱饱 / 大胆的想法），name/meaning/tags 均为中文梗义 |
+| 模型发送 | `send_sticker action=send`（DeepSeek完蛋了）→ 返回文字 + 图片 attachment（640×636 WebP），工具结果图片可被 `loadImage` 加载 |
+| Client 槽位 | 重载后 `deepseek-meme-button` 仍 active；`conversation.input.dock` / `tool.call.toolview` 注册未受影响 |
+| 图标 | `assets/default/icon.png` 256×256、124444 bytes（≤256KiB 上限），已通过 `./icon` 导出 |
+
+> 仍未验证：插件管理页里的图标实际渲染、面板内新梗图的缩略观感——需要刷新页面后由用户确认。
+
 ## 复现命令
 
 ```powershell
