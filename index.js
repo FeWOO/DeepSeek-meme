@@ -40,6 +40,7 @@ const MAX_MEANING_LENGTH = 200
 const MAX_JSON_BODY = 64 * 1024
 const DEFAULT_MAX_STICKER_BYTES = 1024 * 1024
 const DEFAULT_MAX_STICKERS_PER_PACK = 500
+const DEFAULT_MESSAGE_STICKER_SIZE = 180
 
 const MEDIA_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif']
 const EXTENSION_BY_MEDIA = {
@@ -839,6 +840,10 @@ export function apply(ctx, config = {}) {
   const maxStickersPerPack = Number.isInteger(config.maxStickersPerPack) && config.maxStickersPerPack > 0
     ? config.maxStickersPerPack
     : DEFAULT_MAX_STICKERS_PER_PACK
+  const configuredSize = Number(config.messageStickerSize)
+  const messageStickerSize = Number.isInteger(configuredSize) && configuredSize >= 96 && configuredSize <= 240
+    ? configuredSize
+    : DEFAULT_MESSAGE_STICKER_SIZE
   const store = new StickerStore(dataDir, { maxStickerBytes, maxStickersPerPack })
 
   ctx.effect(() => {
@@ -934,6 +939,36 @@ export function apply(ctx, config = {}) {
               const { sticker } = await store.requireSticker(stickerId)
               const data = await store.readStickerBytes(sticker)
               const extension = EXTENSION_BY_MEDIA[sticker.mediaType]
+              const name = `${sticker.name}${extension}`
+              const fullRef = await ctx.attachments.saveImage({
+                data,
+                mediaType: sticker.mediaType,
+                name,
+              })
+              // Sticker messages use a downscaled image so chat renders them
+              // smaller than ordinary image attachments (240px single-image cap
+              // in the shipped UI). Normal uploads never pass through this path.
+              const sourceWidth = fullRef.width > 0 ? fullRef.width : 640
+              const sourceHeight = fullRef.height > 0 ? fullRef.height : 640
+              const scale = Math.min(1, messageStickerSize / Math.max(sourceWidth, sourceHeight))
+              const target = {
+                width: Math.max(1, Math.round(sourceWidth * scale)),
+                height: Math.max(1, Math.round(sourceHeight * scale)),
+                maxBytes: 512 * 1024,
+              }
+              let displayBytes = data
+              let displayMediaType = sticker.mediaType
+              let displayWidth = sourceWidth
+              let displayHeight = sourceHeight
+              try {
+                const requestImage = await ctx.attachments.readImageRequest(fullRef, target)
+                displayBytes = Buffer.from(requestImage.data)
+                displayMediaType = requestImage.mediaType
+                displayWidth = requestImage.width
+                displayHeight = requestImage.height
+              } catch (error) {
+                console.error('[deepseek-meme] sticker downscale failed, sending original', error)
+              }
               const controller = new AbortController()
               const timer = setTimeout(() => controller.abort(), 30000)
               let result
@@ -946,10 +981,10 @@ export function apply(ctx, config = {}) {
                     content: [
                       {
                         type: 'image',
-                        mediaType: sticker.mediaType,
-                        data: data.toString('base64'),
+                        mediaType: displayMediaType,
+                        data: displayBytes.toString('base64'),
                         // Attachment name stays available as a hint; the chat row shows only the image.
-                        name: `${sticker.name}${extension}`,
+                        name,
                       },
                     ],
                   },
@@ -958,7 +993,10 @@ export function apply(ctx, config = {}) {
               } finally {
                 clearTimeout(timer)
               }
-              sendJson(res, 200, { accepted: result?.accepted === true || result?.accepted === undefined })
+              sendJson(res, 200, {
+                accepted: result?.accepted === true || result?.accepted === undefined,
+                image: { width: displayWidth, height: displayHeight, bytes: displayBytes.length },
+              })
               return
             }
             fail(404, 'NOT_FOUND', `没有这个接口：${method} ${path}`)

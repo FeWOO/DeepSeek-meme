@@ -11,3 +11,6 @@
         maxStickerBytes: 1048576
         # Per-pack sticker cap.
         maxStickersPerPack: 500
+        # Long edge (px) of the image sent when a user clicks a sticker.
+        # Ordinary image attachments keep their normal 240px render size.
+        messageStickerSize: 180
