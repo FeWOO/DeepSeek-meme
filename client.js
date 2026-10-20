@@ -818,7 +818,7 @@ window.__ModuleLoader__.load({
 .dsm-tool{display:flex;flex-direction:column;gap:5px;align-items:flex-start;padding:2px 0}
 .dsm-tool-pending{color:var(--dsw-alias-label-secondary);font-size:12px}
 .dsm-tool-text{color:var(--dsw-alias-label-secondary);font-size:12px;line-height:1.45}
-.dsm-tool-img{display:block;max-width:200px;max-height:200px;border-radius:12px;object-fit:contain;background:transparent}
+.dsm-tool-img{display:block;max-width:150px;max-height:150px;border-radius:10px;object-fit:contain;background:transparent}
 .dsm-tool-loading{color:var(--dsw-alias-label-secondary);font-size:12px}
 @media (max-width:520px){.dsm-hint{display:none}.dsm-panel{max-width:100%}}
 `
