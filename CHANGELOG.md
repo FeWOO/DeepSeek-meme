@@ -11,6 +11,11 @@
 - 设计文档：架构、HTTP API、开发与验证、路线图。
 - 默认表情包目录 `assets/default/`。
 
+### Release
+
+- 仓库公开并加入 `dsh-plugin` topic，发布 v0.3.5 Release。
+- 向 awesome-dsh-plugin 社区目录提交 PR [#8465](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/8465)，记录见 `docs/PUBLISHING.md`。
+
 ## [0.3.5] - 2026-10-20
 
 ### Added
