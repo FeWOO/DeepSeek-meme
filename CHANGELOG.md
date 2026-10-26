@@ -21,6 +21,10 @@
 - README 重做为正式项目首页（中英双语、截图、功能表、安装、配置、架构、隐私、兼容性）。
 - 更新发布记录 `docs/PUBLISHING.md`，记录社区目录合并与市场页。
 
+### Packaging
+
+- 发布 npm 包 `dsh-deepseek-meme@0.3.5`，安装方式改为优先 `dsh plugin add dsh-deepseek-meme`（GitHub 直装保留为备用）。
+
 ## [0.3.5] - 2026-10-20
 
 ### Added

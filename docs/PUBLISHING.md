@@ -9,6 +9,15 @@
 - `screenshots.json` 已声明两张商店预览图
 - `package.json` 已补 repository / homepage / bugs / keywords，且包含 `dsh.bundle` manifest
 
+## npm（已发布）
+
+- **包名**：`dsh-deepseek-meme`
+- **版本**：`0.3.5`（`latest`）
+- **包页**：<https://www.npmjs.com/package/dsh-deepseek-meme>
+- **安装**：`dsh plugin add dsh-deepseek-meme`
+- **发布命令**：`npm publish --registry=https://registry.npmjs.org --access public`
+- 注：npm 新包会先出现 `0.0.0-stage` 暂存占位版本，`latest` 已指向 `0.3.5`，不影响安装。
+
 ## 社区目录（已收录）
 
 - **PR**：[awesome-dsh-plugin#8465](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/8465) — **已合并**（2026-10-21T17:13:02Z）
