@@ -8,7 +8,7 @@
     "type": "git",
     "url": "git+https://github.com/FeWOO/DeepSeek-meme.git"
   },
-  "homepage": "https://github.com/FeWOO/DeepSeek-meme",
+  "homepage": "https://awesome-dsh-plugin.com/p/FeWOO/DeepSeek-meme/",
   "bugs": {
     "url": "https://github.com/FeWOO/DeepSeek-meme/issues"
   },
@@ -26,6 +26,7 @@
     "assets/default/**/*",
     "assets/community/**/*",
     "README.md",
+    "README.en.md",
     "LICENSE",
     "screenshots.json"
   ],

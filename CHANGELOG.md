@@ -14,7 +14,12 @@
 ### Release
 
 - 仓库公开并加入 `dsh-plugin` topic，发布 v0.3.5 Release。
-- 向 awesome-dsh-plugin 社区目录提交 PR [#8465](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/8465)，记录见 `docs/PUBLISHING.md`。
+- 向 awesome-dsh-plugin 社区目录提交 PR [#8465](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/8465)，已于 2026-10-21 合并；市场页：<https://awesome-dsh-plugin.com/p/FeWOO/DeepSeek-meme/>。
+
+### Documentation
+
+- README 重做为正式项目首页（中英双语、截图、功能表、安装、配置、架构、隐私、兼容性）。
+- 更新发布记录 `docs/PUBLISHING.md`，记录社区目录合并与市场页。
 
 ## [0.3.5] - 2026-10-20
 
