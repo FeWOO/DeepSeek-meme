@@ -10,6 +10,7 @@ A sticker library for **DeepSeek Harness (DSH)**: a composer button and panel, t
 
 <p align="center">
   <a href="https://github.com/FeWOO/DeepSeek-meme/releases"><img alt="release" src="https://img.shields.io/github/v/release/FeWOO/DeepSeek-meme?style=flat-square&color=4D6BFE"></a>
+  <a href="https://www.npmjs.com/package/dsh-deepseek-meme"><img alt="npm" src="https://img.shields.io/npm/v/dsh-deepseek-meme?style=flat-square&color=4D6BFE"></a>
   <a href="LICENSE"><img alt="license" src="https://img.shields.io/github/license/FeWOO/DeepSeek-meme?style=flat-square"></a>
   <img alt="DSH" src="https://img.shields.io/badge/DSH-0.2.1--rc.2-4D6BFE?style=flat-square">
   <a href="https://awesome-dsh-plugin.com/p/FeWOO/DeepSeek-meme/"><img alt="awesome-dsh-plugin" src="https://awesome-dsh-plugin.com/badge.svg"></a>
@@ -43,6 +44,16 @@ DSH chat has no sticker surface: users type, models cannot read pasted images, a
 ## Install
 
 Requires **DeepSeek Harness 0.2.1-rc.2** (Desktop or Web profile).
+
+### npm (recommended)
+
+```powershell
+dsh plugin add dsh-deepseek-meme
+```
+
+npm: <https://www.npmjs.com/package/dsh-deepseek-meme>
+
+### GitHub (fallback)
 
 ```powershell
 dsh plugin add github:FeWOO/DeepSeek-meme
